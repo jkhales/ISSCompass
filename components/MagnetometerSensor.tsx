@@ -1,13 +1,19 @@
 import React from "react";
 import { Magnetometer, ThreeAxisMeasurement } from "expo-sensors";
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Subscription } from "@unimodules/core";
 
 export function Compass() {
   const [data, setData] = React.useState<ThreeAxisMeasurement>({
-    x: 0,
-    y: 0,
-    z: 0,
+    x: 1,
+    y: 1,
+    z: 1,
   });
   const [subscription, setSubscription] = React.useState<Subscription | null>(
     null
@@ -56,7 +62,14 @@ export function Compass() {
       <Text>
         x: {round(x)} y: {round(y)} z: {round(z)}
       </Text>
-      <Animated.Image source={require('../assets/compass.jpg')} style={{height:300,width:300,transform:[{rotate:`${Math.round(x)}deg`}]}}></Animated.Image>
+      <Animated.Image
+        source={require("../assets/compass.jpg")}
+        style={{
+          height: 300,
+          width: 300,
+          transform: [{ rotate: `${Math.atan2(x, y)}rad` }],
+        }}
+      ></Animated.Image>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={_toggle} style={styles.button}>
