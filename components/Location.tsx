@@ -3,10 +3,19 @@ import { Text, StyleSheet, View } from "react-native";
 import * as Location from "expo-location";
 import fetch from "node-fetch";
 
-export function LocationComponent() {
+type ISSCoords = {
+  latitude: string;
+  longitude: string;
+};
+type ISSLocationType = {
+  iss_position: ISSCoords;
+  message: string;
+  timestamp: string;
+};
+export function ISSRotationAngle() {
   const [location, setLocation] = useState<Location.LocationData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [ISSLocation, setISSLocation] = useState<any>("START");
+  const [ISSLocation, setISSLocation] = useState<ISSLocationType | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -29,7 +38,11 @@ export function LocationComponent() {
 
   useEffect(() => {
     const handle = setInterval(async () => {
-      setISSLocation(await fetch("http://api.open-notify.org/iss-now.json"));
+      const response = await fetch("http://api.open-notify.org/iss-now.json");
+      if (response.ok) {
+        const data = (await response.json()) as any;
+        setISSLocation(data);
+      }
     }, 5000);
 
     return () => {
@@ -37,16 +50,21 @@ export function LocationComponent() {
     };
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <Text>{text}</Text>
-      <Text>ISS DATA: {JSON.stringify(ISSLocation)}</Text>
-    </View>
-  );
-}
+  let latitudeDelta = 0,
+    longitudeDelta = 0;
+  if (location && ISSLocation) {
+    latitudeDelta =
+      location?.coords.latitude -
+        parseFloat(ISSLocation?.iss_position?.latitude) ?? 0;
+    longitudeDelta =
+      location?.coords.longitude -
+        parseFloat(ISSLocation?.iss_position?.longitude) ?? 0;
+  }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+  const polarAngle = Math.atan2(
+    90 - (location?.coords.latitude ?? 0),
+    135 - (location?.coords.longitude ?? 0)
+  );
+
+  return Math.atan2(longitudeDelta, latitudeDelta) - polarAngle;
+}

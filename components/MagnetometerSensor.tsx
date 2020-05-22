@@ -8,8 +8,9 @@ import {
   View,
 } from "react-native";
 import { Subscription } from "@unimodules/core";
+import { ISSRotationAngle } from "./Location";
 
-export function Compass() {
+export function Compass(props: { issRotationAngle: number }) {
   const [data, setData] = React.useState<ThreeAxisMeasurement>({
     x: 1,
     y: 1,
@@ -58,6 +59,8 @@ export function Compass() {
   let { x, y, z } = data;
   return (
     <View style={styles.sensor}>
+      <Text>ROTATION: {props.issRotationAngle}</Text>
+      <Text>TOTAL ROTATION: {Math.atan2(x, y) + props.issRotationAngle}</Text>
       <Text>Magnetometer:</Text>
       <Text>
         x: {round(x)} y: {round(y)} z: {round(z)}
@@ -67,7 +70,13 @@ export function Compass() {
         style={{
           height: 300,
           width: 300,
-          transform: [{ rotate: `${Math.atan2(x, y)}rad` }],
+          transform: [
+            {
+              rotate: `${
+                Math.atan2(x, y) + props.issRotationAngle
+              }rad`,
+            },
+          ],
         }}
       ></Animated.Image>
 
