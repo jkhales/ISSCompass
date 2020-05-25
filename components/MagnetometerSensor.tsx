@@ -59,12 +59,7 @@ export function Compass(props: { issRotationAngle: number }) {
   let { x, y, z } = data;
   return (
     <View style={styles.sensor}>
-      <Text>ROTATION: {props.issRotationAngle}</Text>
-      <Text>TOTAL ROTATION: {Math.atan2(x, y) + props.issRotationAngle}</Text>
-      <Text>Magnetometer:</Text>
-      <Text>
-        x: {round(x)} y: {round(y)} z: {round(z)}
-      </Text>
+      <Text>Location of the ISS (modulo compuation error...)</Text>
       <Animated.Image
         source={require("../assets/compass.jpg")}
         style={{
@@ -73,7 +68,7 @@ export function Compass(props: { issRotationAngle: number }) {
           transform: [
             {
               rotate: `${
-                Math.atan2(x, y) + props.issRotationAngle
+                Math.atan2(x, y) - (Math.PI/2) + props.issRotationAngle
               }rad`,
             },
           ],
