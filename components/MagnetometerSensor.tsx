@@ -2,6 +2,7 @@ import React from "react";
 import { Magnetometer, ThreeAxisMeasurement } from "expo-sensors";
 import {
   Animated,
+  Easing,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,44 +10,35 @@ import {
 } from "react-native";
 import { Subscription } from "@unimodules/core";
 import { ISSRotationAngle } from "./Location";
+import symbolicateStackTrace from "react-native/Libraries/Core/Devtools/symbolicateStackTrace";
+
+const DURATION = 1000;
 
 export function Compass(props: { issRotationAngle: number }) {
-  const [data, setData] = React.useState<ThreeAxisMeasurement>({
-    x: 1,
-    y: 1,
-    z: 1,
-  });
+  const spinValue = React.useRef(new Animated.Value(0)).current;
   const [subscription, setSubscription] = React.useState<Subscription | null>(
     null
   );
-
   React.useEffect(() => {
-    _toggle();
+    _subscribe();
     return () => {
       _unsubscribe();
     };
   }, []);
 
-  const _toggle = () => {
-    if (subscription) {
-      _unsubscribe();
-    } else {
-      _subscribe();
-    }
-  };
-
-  const _slow = () => {
-    Magnetometer.setUpdateInterval(1000);
-  };
-
-  const _fast = () => {
-    Magnetometer.setUpdateInterval(16);
-  };
+  Magnetometer.setUpdateInterval(DURATION / 2);
 
   const _subscribe = () => {
     setSubscription(
       Magnetometer.addListener((result) => {
-        setData(result);
+        const toValue = Math.atan2(result.x, result.y);
+
+        Animated.timing(spinValue, {
+          toValue,
+          duration: DURATION,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }).start();
       })
     );
   };
@@ -56,7 +48,11 @@ export function Compass(props: { issRotationAngle: number }) {
     setSubscription(null);
   };
 
-  let { x, y, z } = data;
+  const spin = spinValue.interpolate({
+    inputRange: [0, 2 * Math.PI],
+    outputRange: [`0rad`, `${2 * Math.PI}rad`],
+  });
+
   return (
     <View style={styles.sensor}>
       <Text>Location of the ISS (modulo compuation error...)</Text>
@@ -67,28 +63,11 @@ export function Compass(props: { issRotationAngle: number }) {
           width: 300,
           transform: [
             {
-              rotate: `${
-                Math.atan2(x, y) - (Math.PI/2) + props.issRotationAngle
-              }rad`,
+              rotate: spin,
             },
           ],
         }}
       ></Animated.Image>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={_toggle} style={styles.button}>
-          <Text>Toggle</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={_slow}
-          style={[styles.button, styles.middleButton]}
-        >
-          <Text>Slow</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={_fast} style={styles.button}>
-          <Text>Fast</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }

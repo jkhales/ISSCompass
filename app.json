@@ -23,6 +23,10 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.acme.compass",
+      "versionCode": 1
     }
   }
 }
