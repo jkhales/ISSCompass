@@ -49,7 +49,7 @@ export function Compass(props: { issRotationAngle: number }) {
     <View style={styles.sensor}>
       <Text>Location of the ISS (modulo compuation error...)</Text>
       <Animated.Image
-        source={require("../assets/compass.jpg")}
+        source={require("../assets/compass.png")}
         style={{
           height: 300,
           width: 300,
