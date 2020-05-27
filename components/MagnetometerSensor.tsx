@@ -1,21 +1,13 @@
 import React from "react";
-import { Magnetometer, ThreeAxisMeasurement } from "expo-sensors";
-import {
-  Animated,
-  Easing,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Magnetometer } from "expo-sensors";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { Subscription } from "@unimodules/core";
 import { ISSRotationAngle } from "./Location";
-import symbolicateStackTrace from "react-native/Libraries/Core/Devtools/symbolicateStackTrace";
 
 const DURATION = 1000;
 
 export function Compass(props: { issRotationAngle: number }) {
-  const spinValue = React.useRef(new Animated.Value(0)).current;
+  let spinValue = React.useRef(new Animated.Value(0)).current;
   const [subscription, setSubscription] = React.useState<Subscription | null>(
     null
   );
@@ -25,13 +17,13 @@ export function Compass(props: { issRotationAngle: number }) {
       _unsubscribe();
     };
   }, []);
-
+  const rotationAdjustment = ISSRotationAngle();
   Magnetometer.setUpdateInterval(DURATION / 2);
 
   const _subscribe = () => {
     setSubscription(
       Magnetometer.addListener((result) => {
-        const toValue = Math.atan2(result.x, result.y);
+        const toValue = Math.atan2(result.x, result.y) + rotationAdjustment;
 
         Animated.timing(spinValue, {
           toValue,
